@@ -524,4 +524,36 @@ function renderResult(d, sn) {
         : (Object.keys(bl.f).length ? t('pickOrNum') : t('noDocs'))}</p>
       ${wing === 'D E'
         ? `<div class="photo"><p><b>${t('deTitle')}</b><br>${t('deText')}</p></div>` : ''}
-      <ol class="steps">${route
+      <ol class="steps">${routeSteps(d, sn, t('arriveWing', b))}</ol>`;
+    if (b === 'C') h += `<p class="note">${t('gapNote', bl.gap[0], bl.gap[1])}</p>`;
+    if (wing === 'D E') h += `<p class="note">${t('deRdcNote', b)}</p>`;
+    if (b === 'A') h += `<p class="note">${t('aNote')}</p>`;
+    if (wing === 'A B') h += `<p class="note">${t('abNote')}</p>`;
+    r.innerHTML = h;
+    return;
+  }
+
+  const f = S.floor, rg = bl.f[f];
+  const total = rg[1] - rg[0] + 1;
+
+  h = `<div>${plate(b, f, 'lg')}</div>
+    <h2 style="margin-top:10px">${t('roomHead', S.num, FL[f])}</h2>
+    <p class="sub">${t('corrLine', b, rg[0], rg[1], total)}</p>
+    <p class="sub" style="margin-top:6px"><b>${t('corrTitle')}</b><br>
+      ${t('corrDesc', `${b} ${sign(f)} ${pad(rg[0])}-${pad(rg[1])}`)}</p>
+    <ol class="steps">${routeSteps(d, sn, t('arriveWing', b), false)}`;
+
+  if (shared) h += `<li>${t('enterWing', wing)}</li>`;
+  h += f > 0
+    ? `<li>${t('climb', FL[f])}</li>`
+    : `<li>${t('stay')}</li>`;
+  h += `<li${S.num === null ? ' class="end"' : ''}>${t('findSign', `${b} · ${sign(f)} · ${pad(rg[0])}-${pad(rg[1])}`)}</li>`;
+  if (S.num !== null) h += `<li class="end">${t('yourRoom', S.num)}</li>`;
+  h += `</ol>`;
+  r.innerHTML = h;
+}
+
+/* ========== بدء التشغيل ========== */
+applyStatic();
+render();
+home();
