@@ -1,75 +1,285 @@
-/* ========== إحداثيات النقاط على الخريطة (705×596) ========== */
-const N = {
-  gate: {x:655,y:548,l:1}, gd:{x:674,y:524}, g2:{x:640,y:495}, g3:{x:618,y:440,l:1},
-  re:   {x:602,y:395}, rm:{x:545,y:392}, rde:{x:480,y:396,l:1},
-  rc:   {x:432,y:398,l:1}, rb:{x:352,y:404,l:1}, rw:{x:300,y:408,l:1},
-  pk:   {x:562,y:432},
-  n1:   {x:428,y:356}, td:{x:413,y:314,l:1}, c2:{x:420,y:282}, cd:{x:408,y:245,l:1},
-  adm:  {x:456,y:198}, act:{x:452,y:238}, clinic:{x:474,y:266,l:1},
-  c3:   {x:428,y:200}, c4:{x:416,y:150}, ab:{x:318,y:106}, ae:{x:380,y:112,l:1},
-  wk:   {x:445,y:98}, cl:{x:486,y:182},
-  e3:   {x:540,y:200}, e2:{x:546,y:270,l:1}, e1:{x:548,y:345}, rest:{x:548,y:122},
-  bn1:  {x:268,y:300}, bn2:{x:250,y:255}, bn3:{x:228,y:175}, bd:{x:256,y:124,l:1},
-  bk:   {x:215,y:258},
-  f1:   {x:290,y:395}, foot:{x:275,y:368}, sw1:{x:278,y:445}, sw:{x:254,y:480}
-};
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  --bg: #EEF1F6; --card: #FFFFFF; --ink: #0F1B3D; --muted: #5B6785; --line: #D5DBE8;
+  --land: #E6ECDA; --roadc: #C6CCBA; --roadf: #FAF8F1; --path: #FFFFFF;
+  --bres: #C9D3F2; --bsrv: #F4DDB8; --bsrvs: #B07A2B; --bgry: #D6D8DE; --bgrys: #9097A8;
+  --tree: #7FA46B; --field: #E3D8B5;
+  --lbl: #0F1B3D; --lblh: #fff;
+  --sign: #1B3BB3; --signText: #1B3BB3;
+  --amber: #FFB81C; --soft: #E4EAFB; --warn: #8A4B00; --warnBg: #FFF1D6;
+}
 
-/* ========== الطرق بين النقاط ========== */
-const E = [
-  ['gate','gd'],['gate','g2'],['g2','g3'],['g3','re'],['re','rm'],
-  ['rm','rde'],['rde','rc'],['rc','rb'],['rb','rw'],['rm','pk'],
-  ['n1','td'],['e2','clinic'],['td','c2'],['c2','cd'],['c2','clinic'],
-  ['adm','cl'],['adm','c3'],['cd','act'],['cd','c3'],['c3','c4'],
-  ['c4','ae'],['ae','ab'],['c4','wk'],['c3','cl'],
-  ['rm','e1'],['e1','e2'],['e2','e3'],['e3','rest'],
-  ['rw','f1'],['f1','foot'],['rw','sw1'],['sw1','sw'],
-  ['rw','bn1'],['bn1','bn2'],['bn2','bn3'],['bn3','bd'],['bn2','bk']
-];
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --land: #1B271F; --roadc: #0F1712; --roadf: #3B473E; --path: #7A8A7E;
+    --bres: #2C3D7A; --bsrv: #5A4426; --bsrvs: #D9A24C;
+    --bgry: #3A3F4D; --bgrys: #6E7690; --tree: #3F6A45; --field: #4A4430;
+    --lbl: #EAF0FF; --lblh: #0D1326;
+    --bg: #0D1326; --card: #162041; --ink: #EAF0FF; --muted: #9AA8CC; --line: #2A3866;
+    --sign: #3F61E0; --signText: #8FA8FF; --soft: #1F2C5A;
+    --warn: #FFD28A; --warnBg: #3A2A0A;
+  }
+}
 
-/* ========== الأماكن ========== */
-const PLACES = {
-  gate:    {n:{ar:'المدخل الرئيسي',fr:'Entrée principale',en:'Main entrance'}, node:'gate', emoji:'🚪', nochip:true},
-  guard:   {n:{ar:'مركز الحراسة',fr:'Poste de garde',en:'Guard post'}, node:'gd', emoji:'🛡️',
-            hint:{ar:'عند باب مدخل الإقامة.',fr:'À la porte d’entrée de la résidence.',en:'At the residence entrance gate.'}},
-  adm:     {n:{ar:'الإدارة',fr:'Administration',en:'Administration'}, node:'adm', emoji:'🏢',
-            hint:{ar:'تقع بجانب النادي. باب حديدي أزرق.',fr:'À côté du club. Porte en fer bleue.',en:'Next to the club. Blue iron gate.'}},
-  act:     {n:{ar:'مصلحة النشاطات',fr:'Service des activités',en:'Activities Service'}, node:'act', emoji:'🩺',
-            hint:{ar:'باب أسود بشبكة حديدية وأمامه درجتان.',fr:'Porte noire avec grille en fer, deux marches devant.',en:'Black door with an iron grille and two steps.'}},
-  clinic:  {n:{ar:'العيادة',fr:'Infirmerie',en:'Clinic'}, node:'clinic', emoji:'🏥',
-            hint:{ar:'لافتة زرقاء على الجدار. المدخل بباب بشبكة حديدية.',fr:'Plaque bleue sur le mur. Entrée avec porte à grille.',en:'Blue sign on the wall. Iron-grilled entrance door.'}},
-  rest:    {n:{ar:'المطعم',fr:'Restaurant',en:'Restaurant'}, node:'rest', emoji:'🍽️',
-            hint:{ar:'قاعة الإطعام، وفيها شباك شحن البطاقات.',fr:'Salle de restauration, avec guichet de rechargement.',en:'Dining hall, with a card top-up window.'}},
-  club:    {n:{ar:'النادي (أكل سريع ومقهى)',fr:'Club (fast-food)',en:'Club (fast food)'}, node:'cl', emoji:'☕',
-            hint:{ar:'لافتة «النادي · FOYER» على يمين الباب الأزرق.',fr:'Enseigne « FOYER · النادي » à droite de la porte bleue.',en:'The “FOYER · النادي” sign is to the right of the blue door.'}},
-  work:    {n:{ar:'المرش',fr:'Douches',en:'Showers'}, node:'wk', emoji:'🚿'},
-  foot:    {n:{ar:'ملعب كرة القدم',fr:'Terrain de football',en:'Football pitch'}, node:'foot', emoji:'⚽'},
-  basket:  {n:{ar:'ملعب كرة السلة',fr:'Terrain de basket',en:'Basketball court'}, node:'bk', emoji:'🏀'},
-  park:    {n:{ar:'موقف السيارات',fr:'Parking',en:'Parking lot'}, node:'pk', emoji:'🅿️'},
-  mosalla: {n:{ar:'مصلى الفضيل الورتلاني',fr:'Salle de prière',en:'Prayer room'}, node:'ab', emoji:'🕌',
-            hint:{ar:'يقع تحت الطابق الأول.',fr:'Situé sous le 1er étage.',en:'Located below the first floor.'}},
-  sw:      {n:{ar:'Street Workout',fr:'Street Workout',en:'Street Workout'}, node:'sw', emoji:'🏋️'}
-};
+*, *::before, *::after { box-sizing: inherit; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, system-ui, sans-serif;
+  line-height: 1.6; -webkit-text-size-adjust: 100%;
+}
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 
-/* ========== الأجنحة والغرف ========== */
-const BLOCKS = {
-  A: {node:'ab', x:370, y:58,  f:{0:[1,11], 1:[12,22]}, partial:true},
-  B: {node:'ab', x:255, y:92,  f:{0:[1,11], 1:[12,22], 2:[23,33], 3:[34,44]}},
-  C: {node:'cd', x:360, y:205, f:{0:[1,17], 1:[22,43], 2:[44,65], 3:[66,87]}, gap:[18,21]},
-  D: {node:'td', x:480, y:313, f:{1:[1,13], 2:[14,26], 3:[27,39]}},
-  E: {node:'td', x:352, y:350, f:{1:[1,11], 2:[12,22], 3:[23,33]}}
-};
+.wrap { max-width: 560px; margin: 0 auto; padding: 0 14px 28px; }
 
-/* أسماء النقاط الوسيطة (للسرد) */
-const WL = {
-  gate:{ar:'المدخل الرئيسي',fr:'l’entrée principale',en:'the main entrance'},
-  g3:{ar:'الطريق بمحاذاة الموقف',fr:'la route le long du parking',en:'the road alongside the parking lot'},
-  rde:{ar:'أسفل الجناح D',fr:'le bas de l’aile D',en:'the bottom of Wing D'},
-  rc:{ar:'المفترق المؤدي للبرج المركزي',fr:'le carrefour vers la tour centrale',en:'the junction toward the central tower'},
-  rb:{ar:'أسفل الجناح E',fr:'le bas de l’aile E',en:'the bottom of Wing E'},
-  rw:{ar:'آخر الطريق غرب الجناح E',fr:'le bout de la route, à l’ouest de l’aile E',en:'the end of the road, west of Wing E'},
-  td:{ar:'البرج المركزي',fr:'la tour centrale',en:'the central tower'},
-  cd:{ar:'شرق الجناح C',fr:'le côté est de l’aile C',en:'the east side of Wing C'},
-  ae:{ar:'ممر الجناح A',fr:'le passage de l’aile A',en:'the Wing A passage'},
-  e2:{ar:'شرق الجناح D',fr:'le côté est de l’aile D',en:'the east side of Wing D'},
-  bd:{ar:'أسفل الجناح B',fr:'le bas de l’aile B',en:'the bottom of Wing B'}
-};
+header {
+  background: var(--sign); color: #fff; margin: 0 -14px;
+  padding: 14px 18px 16px;
+}
+header h1 { margin: 0; font-size: 24px; font-weight: 700; }
+header p { margin: 2px 0 0; font-size: 14px; opacity: .88; }
+.hrow { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+
+.lang { display: flex; gap: 3px; background: rgba(255,255,255,.18); padding: 3px; border-radius: 12px; margin-top: 12px; }
+.lang button {
+  flex: 1; border: 0; background: transparent; color: #fff;
+  border-radius: 9px; padding: 8px 6px; font-size: 15px; font-weight: 700;
+}
+.lang button[aria-pressed="true"] { background: #fff; color: #1B3BB3; }
+
+.startrow { display: flex; align-items: center; gap: 10px; margin: 14px 0 10px; }
+.startrow label { font-size: 14px; color: var(--muted); white-space: nowrap; }
+select {
+  flex: 1; min-width: 0; background: var(--card);
+  border: 1.5px solid var(--line); border-radius: 10px;
+  padding: 9px 10px; font-size: 15px;
+}
+
+.tabs { display: grid; grid-template-columns: 1fr 1fr; background: var(--soft); border-radius: 12px; padding: 4px; gap: 4px; }
+.tabs button {
+  border: 0; background: transparent; border-radius: 9px;
+  padding: 9px 0; font-weight: 500; font-size: 15px; color: var(--muted);
+}
+.tabs button[aria-selected="true"] {
+  background: var(--card); color: var(--signText); font-weight: 700;
+  box-shadow: 0 1px 3px rgba(15,27,61,.18);
+}
+
+.panel { margin-top: 12px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--card); border: 1.5px solid var(--line);
+  border-radius: 999px; padding: 8px 14px 8px 12px; font-size: 14.5px;
+}
+.chip[aria-pressed="true"] { background: var(--sign); border-color: var(--sign); color: #fff; }
+.chip span.e { font-size: 17px; }
+
+.plate {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #fff; color: #1B3BB3; border: 1.5px solid #C9D2EE;
+  border-radius: 7px; padding: 3px 9px 3px 8px; direction: ltr;
+  font-family: "IBM Plex Sans Arabic", Arial, sans-serif; line-height: 1;
+  box-shadow: 0 1px 2px rgba(15,27,61,.15);
+}
+.plate .L { font-size: 30px; font-weight: 700; }
+.plate .R { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; }
+.plate .R i { font-style: normal; font-size: 11px; font-weight: 700; letter-spacing: .04em; }
+.plate .R b { font-size: 17px; font-weight: 700; }
+.plate.lg { padding: 6px 14px 6px 12px; gap: 10px; border-radius: 10px; }
+.plate.lg .L { font-size: 52px; }
+.plate.lg .R i { font-size: 16px; }
+.plate.lg .R b { font-size: 28px; }
+button.plate { cursor: pointer; }
+button.plate[aria-pressed="true"] { background: var(--sign); color: #fff; border-color: var(--sign); }
+
+.blocks { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.blocks .bt {
+  background: #fff; color: #1B3BB3; border: 2px solid #C9D2EE;
+  border-radius: 10px; font-size: 26px; font-weight: 700;
+  padding: 6px 0; font-family: Arial, sans-serif;
+}
+.blocks .bt[aria-pressed="true"] { background: var(--sign); color: #fff; border-color: var(--sign); }
+
+.floors { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.numrow { display: flex; gap: 8px; margin-top: 12px; }
+.numrow input {
+  flex: 1; min-width: 0; background: var(--card);
+  border: 1.5px solid var(--line); border-radius: 10px;
+  padding: 10px 12px; font-size: 16px;
+}
+.btn { background: var(--sign); color: #fff; border: 0; border-radius: 10px; padding: 0 20px; font-weight: 700; }
+.msg { margin-top: 10px; background: var(--warnBg); color: var(--warn); border-radius: 10px; padding: 9px 12px; font-size: 14px; }
+
+/* map */
+.mapcard {
+  margin-top: 14px; background: var(--card); border-radius: 14px;
+  overflow: hidden; border: 1px solid var(--line); position: relative;
+}
+.scroller {
+  direction: ltr; overflow: auto; aspect-ratio: 1/1;
+  max-height: 68vh; width: 100%; -webkit-overflow-scrolling: touch;
+  background: var(--land);
+}
+.stage { 
+  position: relative; 
+  width: 100%; 
+  aspect-ratio: 1/1; /* جعل الخريطة مربعة */
+  direction: ltr; 
+}
+.stage > img { position: absolute; inset: 0; width: 100%; height: 100%; display: none; user-select: none; -webkit-user-drag: none; }
+.stage.sat > img { display: block; }
+.stage.sat .basemap { display: none; }
+.stage svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+/* إخفاء السهم الأبيض الموجود في الصورة الجوية */
+.stage.sat::after {
+  content: "";
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 60px;
+  height: 60px;
+  background: #eef1f6;
+  border-radius: 50%;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.land { fill: var(--land); }
+.rcase { fill: none; stroke: var(--roadc); stroke-width: 12; stroke-linecap: round; stroke-linejoin: round; }
+.rfill { fill: none; stroke: var(--roadf); stroke-width: 8.5; stroke-linecap: round; stroke-linejoin: round; }
+.pth { stroke: var(--path); stroke-width: 1.6; stroke-dasharray: 4 3; fill: none; vector-effect: non-scaling-stroke; opacity: .9; }
+.bres { fill: var(--bres); stroke: #1B3BB3; stroke-width: 1.6; stroke-linejoin: round; }
+.bsrv { fill: var(--bsrv); stroke: var(--bsrvs); stroke-width: 1.4; stroke-linejoin: round; }
+.bgry { fill: var(--bgry); stroke: var(--bgrys); stroke-width: 1.2; stroke-linejoin: round; }
+.tree { fill: var(--tree); opacity: .8; }
+.field { fill: var(--field); stroke: var(--bgrys); stroke-width: 1; stroke-dasharray: 5 4; }
+.cb { fill: #D98F78; stroke: #fff; stroke-width: 1.5; }
+.cf { fill: #5FA862; stroke: #fff; stroke-width: 1.5; }
+.cline { fill: none; stroke: #fff; stroke-width: 1.2; opacity: .9; }
+
+.lb {
+  position: absolute; transform: translate(-50%, -50%);
+  font-size: 11.5px; font-weight: 700; color: var(--lbl);
+  white-space: nowrap; pointer-events: none;
+  text-shadow: 0 0 3px var(--lblh), 0 0 3px var(--lblh), 0 0 5px var(--lblh);
+  unicode-bidi: plaintext; z-index: 1;
+}
+.stage.sat .lb { color: #fff; text-shadow: 0 0 3px #000, 0 0 5px #000; }
+
+.route-case { fill: none; stroke: #0F1B3D; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; opacity: .85; }
+.route-line {
+  fill: none; stroke: var(--amber); stroke-width: 4.5;
+  stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 1 9; animation: flow 1.1s linear infinite;
+}
+@keyframes flow { to { stroke-dashoffset: -10; } }
+
+.zoom { position: absolute; left: 10px; top: 10px; display: flex; flex-direction: column; gap: 6px; z-index: 5; }
+.zoom button {
+  width: 38px; height: 38px; border-radius: 10px; border: 0;
+  background: #fff; color: #0F1B3D; font-size: 21px; font-weight: 700;
+  box-shadow: 0 1px 4px rgba(0,0,0,.35); padding: 0;
+}
+.zoom button[aria-pressed="true"] { background: var(--amber); }
+
+.pin {
+  position: absolute; transform: translate(-50%, -50%);
+  width: 27px; height: 27px; border-radius: 50%;
+  background: #fff; border: 2.5px solid #1B3BB3;
+  display: grid; place-items: center; padding: 0;
+  font-size: 13.5px; line-height: 1;
+  box-shadow: 0 2px 5px rgba(0,0,0,.4); z-index: 2;
+}
+.pin .cap {
+  position: absolute; top: calc(100% + 4px); left: 50%;
+  transform: translateX(-50%); white-space: nowrap;
+  background: #1B3BB3; color: #fff; font-size: 11.5px;
+  font-weight: 500; padding: 2px 7px; border-radius: 6px;
+  display: none; unicode-bidi: plaintext;
+}
+.pin.on, .pin.start { z-index: 4; }
+.pin.on .cap, .pin.start .cap, .zoomed .pin .cap { display: block; }
+.pin.on { background: var(--amber); border-color: #0F1B3D; }
+.pin.on::before {
+  content: ""; position: absolute; inset: -9px; border-radius: 50%;
+  border: 3px solid var(--amber); animation: ring 1.6s ease-out infinite;
+}
+@keyframes ring { from { transform: scale(.6); opacity: 1; } to { transform: scale(1.25); opacity: 0; } }
+.pin.start { border-color: #fff; background: #0F1B3D; color: #fff; }
+.pin.start .cap { background: #0F1B3D; }
+
+.bp {
+  position: absolute; transform: translate(-50%, -50%);
+  background: #fff; color: #1B3BB3; border: 2px solid #1B3BB3;
+  border-radius: 7px; padding: 0 9px; font: 700 17px Arial, sans-serif;
+  box-shadow: 0 2px 5px rgba(0,0,0,.4); z-index: 3;
+}
+.bp.on { background: var(--amber); color: #0F1B3D; border-color: #0F1B3D; z-index: 4; }
+.bp.start { background: #0F1B3D; color: #fff; border-color: #fff; z-index: 4; }
+
+.legend {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  padding: 8px 12px; font-size: 12.5px; color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+.legend i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-inline-end: 5px; vertical-align: -1px; }
+
+/* result */
+.result { margin-top: 14px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+.result h2 { margin: 0 0 4px; font-size: 19px; }
+.result .sub { margin: 0; color: var(--muted); font-size: 14px; }
+.empty { color: var(--muted); font-size: 14.5px; }
+.photo { display: flex; gap: 12px; align-items: flex-start; margin: 12px 0; }
+.photo img { width: 96px; height: 128px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); flex: none; }
+.photo p { margin: 0; font-size: 14px; color: var(--muted); }
+.photo.big img { width: 110px; height: 146px; }
+ol.steps { list-style: none; margin: 12px 0 0; padding: 0; }
+ol.steps li { position: relative; padding: 0 0 14px; padding-inline-start: 30px; font-size: 15px; }
+ol.steps li::before {
+  content: ""; position: absolute; inset-inline-start: 8px; top: 9px;
+  bottom: -4px; width: 2px; background: var(--line);
+}
+ol.steps li:last-child::before { display: none; }
+ol.steps li::after {
+  content: ""; position: absolute; inset-inline-start: 3px; top: 7px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--card); border: 3px solid var(--sign);
+}
+ol.steps li.end::after { background: var(--amber); border-color: #0F1B3D; }
+ol.steps li small { display: block; color: var(--muted); font-size: 13px; }
+.gal { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+.gal figure { margin: 0; }
+.gal img { width: 100%; height: 180px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); display: block; }
+.gal figure:nth-child(odd):last-child { grid-column: 1/-1; }
+.gal figcaption { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.note { margin: 6px 2px 0; font-size: 12px; color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  .route-line, .pin.on::before { animation: none; }
+  .route-line { stroke-dasharray: none; }
+}
+
+#langgate {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--bg); display: flex;
+  align-items: center; justify-content: center; padding: 24px;
+  padding-top: calc(24px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+}
+#langgate[hidden] { display: none; }
+#langgate .box { width: 100%; max-width: 380px; text-align: center; }
+#langgate h1 { margin: 0 0 4px; font-size: 30px; color: var(--signText); }
+#langgate p { margin: 10px 0 22px; color: var(--muted); font-size: 14.5px; line-height: 1.9; }
+#langgate button {
+  display: block; width: 100%; margin-top: 12px;
+  padding: 16px; border-radius: 14px;
+  border: 2px solid var(--line); background: var(--card);
+  font-size: 22px; font-weight: 700; color: var(--ink);
+}
+#langgate button:active, #langgate button:hover { border-color: var(--sign); color: var(--signText); }
